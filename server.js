@@ -54,7 +54,6 @@ app.post("/api/chat", async (req, res) => {
 });
 
 app.post("/api/file", async (req, res) => {
-  console.log("Received file request"); // Add this for debugging
   const { message, file } = req.body;
 
   if (!file) return res.status(400).json({ error: "No file provided" });
