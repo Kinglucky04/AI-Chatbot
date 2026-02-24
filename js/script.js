@@ -1,4 +1,6 @@
-const API_BASE_URL = window.location.origin; 
+const API_BASE_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    ? "http://localhost:3000"  // Local development
+    : window.location.origin;   // Production (same domain)
 
 const chatBody = document.querySelector(".chat-body");
 const messageInput = document.querySelector(".message-input");
@@ -92,8 +94,7 @@ async function generateBotResponse(incomingMessage) {
     const textElement = incomingMessage.querySelector(".message-text");
 
     try {
-        // Call your backend endpoint instead of the API directly
-            const res = await fetch(`${API_BASE_URL}/api/chat`, {
+        const res = await fetch(`${API_BASE_URL}/api/chat`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -101,15 +102,19 @@ async function generateBotResponse(incomingMessage) {
             body: JSON.stringify({ message: userData.message })
         });
 
+        if (!res.ok) {
+            const errorData = await res.json();
+            throw new Error(errorData.details || errorData.error || `Server error: ${res.status}`);
+        }
+
         const data = await res.json();
 
-        // Remove thinking animation and show bot reply
         textElement.classList.remove("thinking-dots");
         textElement.textContent = data.reply;
 
     } catch (error) {
         textElement.classList.remove("thinking-dots");
-        textElement.textContent = "Error getting response";
+        textElement.textContent = "Error: " + error.message;
         console.error("Chatbot error:", error);
     }
 }
