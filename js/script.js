@@ -1,3 +1,5 @@
+const API_BASE_URL = window.location.origin; 
+
 const chatBody = document.querySelector(".chat-body");
 const messageInput = document.querySelector(".message-input");
 const sendMessage = document.getElementById("send-message");
@@ -8,8 +10,6 @@ const userData = {
     message: null
 }
 
-const API_URL = "https://openrouter.ai/api/v1/chat/completions";
-const API_KEY = "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";
 let recorder;
 let audioChunks = [];
 
@@ -48,7 +48,7 @@ fileInput.addEventListener("change", async () => {
     reader.readAsDataURL(file);
 });
 
-voiceBtn.addEventListener("click", async () => {
+/* voiceBtn.addEventListener("click", async () => {
 
     if(recorder && recorder.state === "recording"){
         recorder.stop();
@@ -77,7 +77,7 @@ voiceBtn.addEventListener("click", async () => {
 
     recorder.start();
     voiceBtn.textContent = "stop_circle";
-});
+}); */
 
 // create message with dynamic classes and return it
 function createMessageElement(content, ...classes){
@@ -87,44 +87,37 @@ function createMessageElement(content, ...classes){
     return div;
 }
 
-async function generateBotResponse(incomingMessage){
-
+// Sends user message to backend and updates the chat with the bot response
+async function generateBotResponse(incomingMessage) {
     const textElement = incomingMessage.querySelector(".message-text");
 
-    try{
-        const response = await fetch(API_URL,{
-            method:"POST",
-            headers:{
-                "Content-Type":"application/json",
-                "Authorization":`Bearer ${API_KEY}`
+    try {
+        // Call your backend endpoint instead of the API directly
+            const res = await fetch(`${API_BASE_URL}/api/chat`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
             },
-            body: JSON.stringify({
-                model:"google/gemma-3-4b-it:free",
-                messages:[
-                    {
-                        role:"user",
-                        content: userData.message
-                    }
-                ]
-            })
+            body: JSON.stringify({ message: userData.message })
         });
 
-        const data = await response.json();
+        const data = await res.json();
 
-        const botReply = data.choices[0].message.content;
-
+        // Remove thinking animation and show bot reply
         textElement.classList.remove("thinking-dots");
-        textElement.textContent = botReply;
+        textElement.textContent = data.reply;
 
-    }catch(error){
+    } catch (error) {
+        textElement.classList.remove("thinking-dots");
         textElement.textContent = "Error getting response";
-        console.error(error);
+        console.error("Chatbot error:", error);
     }
 }
 
 
 // send file data to AI and get response
-async function sendFileToAI(base64, mimeType){
+async function sendFileToAI(base64, mimeType) {
+    // Show thinking animation in the chat
     const thinkingMsg = createMessageElement(
         `<div class="message-text thinking-dots"><span></span><span></span><span></span></div>`,
         "bot-message"
@@ -133,46 +126,38 @@ async function sendFileToAI(base64, mimeType){
 
     const textElement = thinkingMsg.querySelector(".message-text");
 
-    try{
-        const res = await fetch(API_URL,{
-            method:"POST",
-            headers:{
-                "Content-Type":"application/json",
-                "Authorization":`Bearer ${API_KEY}`
+    try {
+        // Send file to backend
+            const res = await fetch(`${API_BASE_URL}/api/file`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                model:"google/gemma-3-4b-it:free",
-                messages:[
-                    {
-                        role:"user",
-                        content:[
-                            { type:"text", text:"Describe this file" },
-                            {
-                                type:"image_url",
-                                image_url:{
-                                    url:`data:${mimeType};base64,${base64}`
-                                }
-                            }
-                        ]
-                    }
-                ]
-            })
-        });
+                message: "Describe this file",
+                file: {
+                    data: base64,
+                    type: mimeType
+                }
+    })
+});
 
         const data = await res.json();
 
+        // Remove thinking animation and display bot response
         textElement.classList.remove("thinking-dots");
-        textElement.textContent = data.choices[0].message.content;
+        textElement.textContent = data.reply;
 
-    }catch(err){
-        textElement.textContent="Upload failed.";
-        console.error(err);
+    } catch (err) {
+        textElement.classList.remove("thinking-dots");
+        textElement.textContent = "Upload failed.";
+        console.error("File upload error:", err);
     }
 }
 
 
 // this feature is currently not working because openrouter does not support audio input yet. still looking for a model that supports audio, will implement it when i do.
-async function sendAudioToAI(base64){
+/* async function sendAudioToAI(base64){
 
     const thinkingMsg = createMessageElement(
         `<div class="message-text thinking-dots"><span></span><span></span><span></span></div>`,
@@ -218,7 +203,7 @@ async function sendAudioToAI(base64){
         textElement.textContent="Voice failed.";
         console.error(err);
     }
-}
+} */
 
 // handle outgoing message by the user
 function handleOutGoingMessage(e){
@@ -248,4 +233,4 @@ function handleOutGoingMessage(e){
 
         generateBotResponse(incomingMessage);
     }, 600); 
-}
+} 

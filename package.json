@@ -1,0 +1,29 @@
+{
+  "name": "ai-chatbot",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "AI Chatbot a clone of chat gpt that uses real real AI llm to teach prompt engineering",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kinglucky04/AI-Chatbot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Kinglucky04/AI-Chatbot/issues"
+  },
+  "homepage": "https://github.com/Kinglucky04/AI-Chatbot#readme",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^4.18.2",
+    "node-fetch": "^3.3.2"
+  }
+}
