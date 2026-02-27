@@ -8,9 +8,19 @@ const sendMessage = document.getElementById("send-message");
 const fileInput = document.getElementById("file-input");
 const attachBtn = document.getElementById("attach_file");
 const voiceBtn = document.getElementById("voice-msg");
+const toggleBtn = document.getElementById("theme-toggle");
+const emojiBtn = document.getElementById("emoji-btn");
+const emojiPanel = document.getElementById("emoji-panel");
 const userData = {
     message: null
 }
+
+const emojis = [
+"😀","😂","😍","😎","😭","😡","👍","🙏","🔥","❤️",
+"😁","😉","🤔","😅","🥳","🤯","😴","😇","🤩","🤝",
+"😈","👀","💯","✨","🎉","🥶","🤗","🤡","😱","🤌",
+"🐐","💀","🫡","😬","🙄","🤤","👑","💪","🤓","🥹"
+];
 
 let recorder;
 let audioChunks = [];
@@ -50,6 +60,29 @@ fileInput.addEventListener("change", async () => {
     reader.readAsDataURL(file);
 });
 
+    toggleBtn.addEventListener("click", () => {
+        document.body.classList.toggle("dark");
+
+        if(document.body.classList.contains("dark")){
+            toggleBtn.textContent = "light_mode";
+            localStorage.setItem("theme","dark");
+        }else{
+            toggleBtn.textContent = "dark_mode";
+            localStorage.setItem("theme","light");
+        }
+    });
+
+    emojiBtn.addEventListener("click",()=>{
+    emojiPanel.classList.toggle("show");
+});
+
+// Close emoji panel When Clicking Outside
+document.addEventListener("click",(e)=>{
+    if(!emojiPanel.contains(e.target) && e.target!==emojiBtn){
+        emojiPanel.classList.remove("show");
+    }
+});
+
 /* voiceBtn.addEventListener("click", async () => {
 
     if(recorder && recorder.state === "recording"){
@@ -81,12 +114,78 @@ fileInput.addEventListener("change", async () => {
     voiceBtn.textContent = "stop_circle";
 }); */
 
+
+if(localStorage.getItem("theme")==="dark"){
+    document.body.classList.add("dark");
+    toggleBtn.textContent="light_mode";
+}
+
 // create message with dynamic classes and return it
 function createMessageElement(content, ...classes){
     const div = document.createElement("div");
     div.classList.add("message", ...classes);
     div.innerHTML = content;
     return div;
+}
+
+function renderEmojis(){
+    emojiPanel.innerHTML="";
+    emojis.forEach(e=>{
+        const span=document.createElement("span");
+        span.textContent=e;
+        span.className="emoji";
+
+        span.addEventListener("click",()=>{
+            insertAtCursor(messageInput,e);
+            emojiPanel.classList.remove("show");
+            messageInput.focus();
+        });
+
+        emojiPanel.appendChild(span);
+    });
+}
+
+renderEmojis();
+
+function insertAtCursor(input, text){
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+
+    input.value =
+        input.value.substring(0,start) +
+        text +
+        input.value.substring(end);
+
+    input.selectionStart =
+    input.selectionEnd = start + text.length;
+}
+
+function formatBotReply(text){
+
+    // escape html first (security)
+    text = text
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;");
+
+    // code blocks ```code```
+    text = text.replace(/```([\s\S]*?)```/g,(match,code)=>{
+        return `<pre class="code-block"><code>${code.trim()}</code></pre>`;
+    });
+
+    // inline code `code`
+    text = text.replace(/`([^`]+)`/g,'<code class="inline-code">$1</code>');
+
+    // bold **text**
+    text = text.replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>");
+
+    // italic *text*
+    text = text.replace(/\*(.*?)\*/g,"<em>$1</em>");
+
+    // line breaks
+    text = text.replace(/\n/g,"<br>");
+
+    return text;
 }
 
 // Sends user message to backend and updates the chat with the bot response
@@ -110,7 +209,7 @@ async function generateBotResponse(incomingMessage) {
         const data = await res.json();
 
         textElement.classList.remove("thinking-dots");
-        textElement.textContent = data.reply;
+        textElement.innerHTML = formatBotReply(data.reply);
 
     } catch (error) {
         textElement.classList.remove("thinking-dots");
