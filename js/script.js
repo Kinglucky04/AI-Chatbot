@@ -83,7 +83,7 @@ document.addEventListener("click",(e)=>{
     }
 });
 
-/* voiceBtn.addEventListener("click", async () => {
+ voiceBtn.addEventListener("click", async () => {
 
     if(recorder && recorder.state === "recording"){
         recorder.stop();
@@ -112,7 +112,7 @@ document.addEventListener("click",(e)=>{
 
     recorder.start();
     voiceBtn.textContent = "stop_circle";
-}); */
+}); 
 
 
 if(localStorage.getItem("theme")==="dark"){
@@ -250,7 +250,7 @@ async function sendFileToAI(base64, mimeType) {
 
         // Remove thinking animation and display bot response
         textElement.classList.remove("thinking-dots");
-        textElement.textContent = data.reply;
+        textElement.innerHTML = formatBotReply(data.reply);
 
     } catch (err) {
         textElement.classList.remove("thinking-dots");
@@ -261,7 +261,7 @@ async function sendFileToAI(base64, mimeType) {
 
 
 // this feature is currently not working because openrouter does not support audio input yet. still looking for a model that supports audio, will implement it when i do.
-/* async function sendAudioToAI(base64){
+ async function sendAudioToAI(base64){
 
     const thinkingMsg = createMessageElement(
         `<div class="message-text thinking-dots"><span></span><span></span><span></span></div>`,
@@ -307,7 +307,7 @@ async function sendFileToAI(base64, mimeType) {
         textElement.textContent="Voice failed.";
         console.error(err);
     }
-} */
+} 
 
 // handle outgoing message by the user
 function handleOutGoingMessage(e){

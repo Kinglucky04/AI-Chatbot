@@ -141,6 +141,14 @@ body {
     line-height: 1.5;
     word-wrap: break-word;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    word-break: break-word; 
+    overflow-wrap: anywhere; 
+    max-width: 100%; 
+}
+
+.message-text .code-block {
+    max-width: 100%;
+    overflow-x: auto;
 }
 
 .bot-message .message-text {
